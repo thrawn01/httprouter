@@ -315,6 +315,42 @@ func (n *node) insertChild(numParams uint8, path, fullPath string, handle Handle
 	n.handle = handle
 }
 
+/*
+ Not working, abandoned for a bit
+ */
+func (n *node) getPartial(path string) (handle Handle, match string) {
+walk: // outer loop for walking the tree
+	for {
+		if len(path) > len(n.path) {
+			if path[:len(n.path)] == n.path {
+				//fmt.Printf("url '%s' matched '%s'\n", path, n.path)
+				match += n.path
+				path = path[len(n.path):]
+				// If this node does not have a wildcard (param or catchAll)
+				// child,  we can just look up the next child node and continue
+				// to walk down the tree
+				if !n.wildChild {
+					c := path[0]
+					for i := 0; i < len(n.indices); i++ {
+						if c == n.indices[i] {
+							n = n.children[i]
+							continue walk
+						}
+					}
+				}
+			}
+		} else if path == n.path {
+			match += n.path
+			// We should have reached the node containing the handle.
+			// Check if this node has a handle registered.
+			if handle = n.handle; handle != nil {
+				return
+			}
+		}
+	}
+	return
+}
+
 // Returns the handle registered with the given path (key). The values of
 // wildcards are saved to a map.
 // If no handle can be found, a TSR (trailing slash redirect) recommendation is
