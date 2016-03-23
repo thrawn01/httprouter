@@ -77,19 +77,19 @@ func (r *PartialRouter) Handle(method, path string, handle StdHandle) {
 		r.trees[method] = root
 	}
 
-	root.addRoute(path, func(w http.ResponseWriter, r *http.Request, ps Params) {
+	root.addRoute(path, func(ctx Context, w http.ResponseWriter, r *http.Request) {
 		handle(w, r)
 	})
 }
 
 // ServeHTTP makes the router implement the http.Handler interface.
-func (r *PartialRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+/*func (r *PartialRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
 
 	if root := r.trees[req.Method]; root != nil {
 		if handle, ps, _ := root.getValue(path); handle != nil {
-			handle(w, req, ps)
+			handle(ParamContext{ps}, req)
 			return
 		}
 	}
-}
+}*/
