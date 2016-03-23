@@ -25,8 +25,8 @@ func printChildren(n *node, prefix string) {
 // Used as a workaround since we can't compare functions or their addresses
 var fakeHandlerValue string
 
-func fakeHandler(val string) Handle {
-	return func(http.ResponseWriter, *http.Request, Params) {
+func fakeHandler(val string) ParamCtxHandle {
+	return func(ParamContext, http.ResponseWriter, *http.Request) {
 		fakeHandlerValue = val
 	}
 }
