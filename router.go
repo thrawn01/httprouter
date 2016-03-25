@@ -78,26 +78,22 @@ package httprouter
 
 import (
 	"net/http"
-"golang.org/x/net/context"
+	"golang.org/x/net/context"
 )
 
 // Handle is a function that can be registered to a route to handle HTTP
 // requests. Like http.HandlerFunc, but has a third parameter for the values of
 // wildcards (variables).
 
-type ParamCtxHandle func(ParamContext, http.ResponseWriter, *http.Request)
+type ParamContextHandle func(ParamContext, http.ResponseWriter, *http.Request)
 
-type ParamCtxHandler interface {
-	ServeHTTP(ParamContext, http.ResponseWriter, *http.Request)
-}
+type ContextHandlerFunc func(context.Context, http.ResponseWriter, *http.Request)
 
-type CtxHandlerFunc func(context.Context, http.ResponseWriter, *http.Request)
-
-func (self CtxHandlerFunc) ServeHTTP(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (self ContextHandlerFunc) ServeHTTP(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	self(ctx, w, r)
 }
 
-type CtxHandler interface {
+type ContextHandler interface {
 	ServeHTTP(context.Context, http.ResponseWriter, *http.Request)
 }
 
@@ -160,14 +156,14 @@ type Router struct {
 
 	// Configurable http.Handler which is called when no matching route is
 	// found. If it is not set, http.NotFound is used.
-	NotFound               CtxHandler
+	NotFound               ContextHandler
 
 	// Configurable http.Handler which is called when a request
 	// cannot be routed and HandleMethodNotAllowed is true.
 	// If it is not set, http.Error with http.StatusMethodNotAllowed is used.
 	// The "Allow" header with allowed request methods is set before the handler
 	// is called.
-	MethodNotAllowed       CtxHandler
+	MethodNotAllowed       ContextHandler
 
 	// Function to handle panics recovered from http handlers.
 	// It should be used to generate a error page and return the http error code
@@ -192,37 +188,37 @@ func New() *Router {
 }
 
 // GET is a shortcut for router.Handle("GET", path, handle)
-func (r *Router) GET(path string, handle ParamCtxHandle) {
+func (r *Router) GET(path string, handle ParamContextHandle) {
 	r.Handle("GET", path, handle)
 }
 
 // HEAD is a shortcut for router.Handle("HEAD", path, handle)
-func (r *Router) HEAD(path string, handle ParamCtxHandle) {
+func (r *Router) HEAD(path string, handle ParamContextHandle) {
 	r.Handle("HEAD", path, handle)
 }
 
 // OPTIONS is a shortcut for router.Handle("OPTIONS", path, handle)
-func (r *Router) OPTIONS(path string, handle ParamCtxHandle) {
+func (r *Router) OPTIONS(path string, handle ParamContextHandle) {
 	r.Handle("OPTIONS", path, handle)
 }
 
 // POST is a shortcut for router.Handle("POST", path, handle)
-func (r *Router) POST(path string, handle ParamCtxHandle) {
+func (r *Router) POST(path string, handle ParamContextHandle) {
 	r.Handle("POST", path, handle)
 }
 
 // PUT is a shortcut for router.Handle("PUT", path, handle)
-func (r *Router) PUT(path string, handle ParamCtxHandle) {
+func (r *Router) PUT(path string, handle ParamContextHandle) {
 	r.Handle("PUT", path, handle)
 }
 
 // PATCH is a shortcut for router.Handle("PATCH", path, handle)
-func (r *Router) PATCH(path string, handle ParamCtxHandle) {
+func (r *Router) PATCH(path string, handle ParamContextHandle) {
 	r.Handle("PATCH", path, handle)
 }
 
 // DELETE is a shortcut for router.Handle("DELETE", path, handle)
-func (r *Router) DELETE(path string, handle ParamCtxHandle) {
+func (r *Router) DELETE(path string, handle ParamContextHandle) {
 	r.Handle("DELETE", path, handle)
 }
 
@@ -234,7 +230,7 @@ func (r *Router) DELETE(path string, handle ParamCtxHandle) {
 // This function is intended for bulk loading and to allow the usage of less
 // frequently used, non-standardized or custom methods (e.g. for internal
 // communication with a proxy).
-func (r *Router) Handle(method, path string, handle ParamCtxHandle) {
+func (r *Router) Handle(method, path string, handle ParamContextHandle) {
 	if path[0] != '/' {
 		panic("path must begin with '/' in path '" + path + "'")
 	}
@@ -302,7 +298,7 @@ func (r *Router) recv(w http.ResponseWriter, req *http.Request) {
 // If the path was found, it returns the handle function and the path parameter
 // values. Otherwise the third return value indicates whether a redirection to
 // the same path with an extra / without the trailing slash should be performed.
-func (r *Router) Lookup(method, path string) (ParamCtxHandle, Params, bool) {
+func (r *Router) Lookup(method, path string) (ParamContextHandle, Params, bool) {
 	if root := r.trees[method]; root != nil {
 		return root.getValue(path)
 	}

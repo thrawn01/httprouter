@@ -47,7 +47,7 @@ type node struct {
 	maxParams uint8
 	indices   string
 	children  []*node
-	handle    ParamCtxHandle
+	handle    ParamContextHandle
 	priority  uint32
 }
 
@@ -79,7 +79,7 @@ func (n *node) incrementChildPrio(pos int) int {
 
 // addRoute adds a node with the given handle to the path.
 // Not concurrency-safe!
-func (n *node) addRoute(path string, handle ParamCtxHandle) {
+func (n *node) addRoute(path string, handle ParamContextHandle) {
 	fullPath := path
 	n.priority++
 	numParams := countParams(path)
@@ -202,7 +202,7 @@ func (n *node) addRoute(path string, handle ParamCtxHandle) {
 	}
 }
 
-func (n *node) insertChild(numParams uint8, path, fullPath string, handle ParamCtxHandle) {
+func (n *node) insertChild(numParams uint8, path, fullPath string, handle ParamContextHandle) {
 	var offset int // already handled bytes of the path
 
 	// find prefix until first wildcard (beginning with ':'' or '*'')
@@ -318,7 +318,7 @@ func (n *node) insertChild(numParams uint8, path, fullPath string, handle ParamC
 /*
  Not working, abandoned for a bit
  */
-func (n *node) getPartial(path string) (handle ParamCtxHandle, match string) {
+func (n *node) getPartial(path string) (handle ParamContextHandle, match string) {
 walk: // outer loop for walking the tree
 	for {
 		if len(path) > len(n.path) {
@@ -356,7 +356,7 @@ walk: // outer loop for walking the tree
 // If no handle can be found, a TSR (trailing slash redirect) recommendation is
 // made if a handle exists with an extra (without the) trailing slash for the
 // given path.
-func (n *node) getValue(path string) (handle ParamCtxHandle, p Params, tsr bool) {
+func (n *node) getValue(path string) (handle ParamContextHandle, p Params, tsr bool) {
 walk: // outer loop for walking the tree
 	for {
 		if len(path) > len(n.path) {
